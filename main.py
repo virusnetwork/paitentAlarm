@@ -1,6 +1,7 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import speech_recognition as sr
+import pyttsx3
 
 
 def speech_from_mic(recognizer, microphone):
@@ -47,6 +48,13 @@ def speech_from_mic(recognizer, microphone):
     return response
 
 
+def text_to_speech(text):
+    # take text and turn it into speech
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.runAndWait()
+
+
 if __name__ == '__main__':
     # create recognizer and mic instances
     recognizer = sr.Recognizer()
@@ -73,3 +81,4 @@ if __name__ == '__main__':
 
         else:
             print("You said: {}".format(speech["transcription"]))
+            text_to_speech(speech["transcription"])
