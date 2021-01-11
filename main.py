@@ -3,6 +3,7 @@
 import speech_recognition as sr
 import pyttsx3
 import time
+import json
 
 
 class Patient:
@@ -19,6 +20,9 @@ class Patient:
         self.condition = condition
         self.risk_level = risk_level
 
+    def to_json(self) -> str:
+        return json.dumps(self, default=lambda x: x.__dict__)
+
 
 class Alarm:
     patient: Patient
@@ -29,8 +33,11 @@ class Alarm:
     def __init__(self, patient: Patient):
         self.patient = patient
 
+    def to_json(self) -> str:
+        return json.dumps(self, default=lambda x: x.__dict__)
 
-def speech_from_mic(recognizer, microphone):
+
+def speech_from_mic(audio_recognizer, usb_microphone):
     """takes speech from microphone turn to text
     returns a directory with one of 3 values
     "success" : boolean saying API request was successful or not
@@ -39,17 +46,17 @@ def speech_from_mic(recognizer, microphone):
     """
 
     # check that recognizer and microphone are appropriate types
-    if not isinstance(recognizer, sr.Recognizer):
+    if not isinstance(audio_recognizer, sr.Recognizer):
         raise TypeError("`recognizer` must be `Recognizer` instance")
 
-    if not isinstance(microphone, sr.Microphone):
+    if not isinstance(usb_microphone, sr.Microphone):
         raise TypeError("microphone object must be of sr.Microphone")
 
     # we adjust ambient sensitivity to ambient noise
     # then we record from microphone and save as var audio
-    with microphone as source:
-        recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
+    with usb_microphone as source:
+        audio_recognizer.adjust_for_ambient_noise(source)
+        audio = audio_recognizer.listen(source)
 
     # setting up response object
     response = {
@@ -62,7 +69,7 @@ def speech_from_mic(recognizer, microphone):
     # if a RequestError or unknown value error exception is caught,
     #   update the response object
     try:
-        response["transcription"] = recognizer.recognize_google(audio)
+        response["transcription"] = audio_recognizer.recognize_google(audio)
     except sr.RequestError:
         # API was unreachable or unresponsive
         response["success"] = False
@@ -82,7 +89,6 @@ def text_to_speech(text):
 
 
 if __name__ == '__main__':
-
     # create recognizer and mic instances
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
