@@ -2,6 +2,7 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import speech_recognition as sr
 import pyttsx3
+import time
 
 
 class Patient:
@@ -17,6 +18,16 @@ class Patient:
         self.room = room
         self.condition = condition
         self.risk_level = risk_level
+
+
+class Alarm:
+    patient: Patient
+    timeOfAlarm: time.localtime()
+    timeOfAlarmOff: time.localtime()
+    nurse: str
+
+    def __init__(self, patient: Patient):
+        self.patient = patient
 
 
 def speech_from_mic(recognizer, microphone):
