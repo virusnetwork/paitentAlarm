@@ -1,5 +1,3 @@
-# This is a sample Python script.
-
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import speech_recognition as sr
@@ -49,8 +47,29 @@ def speech_from_mic(recognizer, microphone):
     return response
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    pass
+    # create recognizer and mic instances
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    print("speech to text")
+
+    while True:
+        speech = speech_from_mic(recognizer, microphone)
+
+        # if error print error and shutdown
+        if speech["error"]:
+            print("ERROR: {}".format(speech["error"]))
+            # if error is because speech is untranslatable tell user and carry on
+            if speech["error"] == "Unable to recognize speech":
+                print("I don't understand")
+            else:
+                break
+
+        # if user says stop stop the program
+        elif speech["transcription"].lower() == "stop":
+            print("shutting down")
+            break
+
+        else:
+            print("You said: {}".format(speech["transcription"]))
