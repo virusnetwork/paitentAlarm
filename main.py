@@ -4,6 +4,21 @@ import speech_recognition as sr
 import pyttsx3
 
 
+class Patient:
+    name: str
+    bed: int
+    room: int
+    condition: str
+    risk_level: int
+
+    def __init__(self, name: str, bed: int, room: int, condition: str, risk_level: int):
+        self.name = name
+        self.bed = bed
+        self.room = room
+        self.condition = condition
+        self.risk_level = risk_level
+
+
 def speech_from_mic(recognizer, microphone):
     """takes speech from microphone turn to text
     returns a directory with one of 3 values
@@ -56,6 +71,7 @@ def text_to_speech(text):
 
 
 if __name__ == '__main__':
+
     # create recognizer and mic instances
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
@@ -75,9 +91,8 @@ if __name__ == '__main__':
                 break
 
         # if user says stop stop the program
-        elif speech["transcription"].lower() == "stop":
-            print("shutting down")
-            break
+        elif "i need help" in speech["transcription"].lower():
+            text_to_speech("What's wrong?")
 
         else:
             print("You said: {}".format(speech["transcription"]))
