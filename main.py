@@ -24,14 +24,20 @@ class Patient:
         return json.dumps(self, default=lambda x: x.__dict__)
 
 
+patient2 = Patient("Miles Singleton", 1, 1, "Colitis", 1)
+
+
 class Alarm:
     patient: Patient
+    reason: str
     timeOfAlarm: time.localtime()
     timeOfAlarmOff: time.localtime()
     nurse: str
 
-    def __init__(self, patient: Patient):
+    def __init__(self, patient: Patient, reason: str):
         self.patient = patient
+        self.reason = reason
+        self.timeOfAlarm = time.localtime()
 
     def to_json(self) -> str:
         return json.dumps(self, default=lambda x: x.__dict__)
@@ -88,29 +94,46 @@ def text_to_speech(text):
     engine.runAndWait()
 
 
-if __name__ == '__main__':
+def call_nurse():
+    reason = listen()
+    if reason["error"]:
+        text_to_speech("I don't understand could you repeat")
+    else:
+        text_to_speech("im calling a nurse")
+        print(reason["transcription"])
+        new_alarm = Alarm(patient2, reason["transcription"])
+        print(new_alarm.to_json())
+        return True
+
+
+def listen():
     # create recognizer and mic instances
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
 
     print("speech to text")
 
-    while True:
-        speech = speech_from_mic(recognizer, microphone)
+    return speech_from_mic(recognizer, microphone)
 
-        # if error print error and shutdown
-        if speech["error"]:
-            print("ERROR: {}".format(speech["error"]))
-            # if error is because speech is untranslatable tell user and carry on
-            if speech["error"] == "Unable to recognize speech":
-                print("I don't understand")
-            else:
+
+if __name__ == '__main__':
+
+    speech = listen()
+    # if error print error and shutdown
+    if speech["error"]:
+        print("ERROR: {}".format(speech["error"]))
+        # if error is because speech is untranslatable tell user and carry on
+        if speech["error"] == "Unable to recognize speech":
+            print("I don't understand")
+        else:
+            pass
+
+    elif "i need help" in speech["transcription"].lower():
+        text_to_speech("What's wrong?")
+        while True:
+            if call_nurse():
                 break
 
-        # if user says stop stop the program
-        elif "i need help" in speech["transcription"].lower():
-            text_to_speech("What's wrong?")
-
-        else:
-            print("You said: {}".format(speech["transcription"]))
-            text_to_speech(speech["transcription"])
+    else:
+        print("You said: {}".format(speech["transcription"]))
+        text_to_speech(speech["transcription"])
