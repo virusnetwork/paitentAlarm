@@ -6,36 +6,16 @@ import time
 import json
 
 
-class Patient:
-    name: str
-    bed: int
-    room: int
-    condition: str
-    risk_level: int
-
-    def __init__(self, name: str, bed: int, room: int, condition: str, risk_level: int):
-        self.name = name
-        self.bed = bed
-        self.room = room
-        self.condition = condition
-        self.risk_level = risk_level
-
-    def to_json(self) -> str:
-        return json.dumps(self, default=lambda x: x.__dict__)
-
-
-patient2 = Patient("Miles Singleton", 1, 1, "Colitis", 1)
-
-
 class Alarm:
-    patient: Patient
+    # which room and bed is the voice assistant located in
+    # used on sever side to get the patient
+    location = [1, 1]
     reason: str
     timeOfAlarm: time.localtime()
     timeOfAlarmOff: time.localtime()
     nurse: str
 
-    def __init__(self, patient: Patient, reason: str):
-        self.patient = patient
+    def __init__(self, reason: str):
         self.reason = reason
         self.timeOfAlarm = time.localtime()
 
@@ -101,7 +81,7 @@ def call_nurse():
     else:
         text_to_speech("im calling a nurse")
         print(reason["transcription"])
-        new_alarm = Alarm(patient2, reason["transcription"])
+        new_alarm = Alarm(reason["transcription"])
         print(new_alarm.to_json())
         return True
 
