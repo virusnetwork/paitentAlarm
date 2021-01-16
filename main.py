@@ -74,16 +74,28 @@ def text_to_speech(text):
     engine.runAndWait()
 
 
+def play_radio():
+    pass
+
+
 def call_nurse():
     reason = listen()
     if reason["error"]:
         text_to_speech("I don't understand could you repeat")
     else:
-        text_to_speech("im calling a nurse")
-        print(reason["transcription"])
-        new_alarm = Alarm(reason["transcription"])
-        print(new_alarm.to_json())
+        if (reason["transcription"]) is "play the radio":
+            play_radio()
+        else:
+            text_to_speech("im calling a nurse")
+            print(reason["transcription"])
+            new_alarm = Alarm(reason["transcription"])
+            print(new_alarm.to_json())
         return True
+
+
+def simple_response(transcript):
+    if transcript == "what time is it":
+        text_to_speech("The time is {}".format(time.strftime("%H:%M", time.localtime())))
 
 
 def listen():
@@ -97,23 +109,23 @@ def listen():
 
 
 if __name__ == '__main__':
+    while True:
+        speech = listen()
+        # if error print error and shutdown
+        if speech["error"]:
+            print("ERROR: {}".format(speech["error"]))
+            # if error is because speech is untranslatable tell user and carry on
+            if speech["error"] == "Unable to recognize speech":
+                print("I don't understand")
+            else:
+                pass
 
-    speech = listen()
-    # if error print error and shutdown
-    if speech["error"]:
-        print("ERROR: {}".format(speech["error"]))
-        # if error is because speech is untranslatable tell user and carry on
-        if speech["error"] == "Unable to recognize speech":
-            print("I don't understand")
+        elif "i need help" in speech["transcription"].lower():
+            text_to_speech("What's wrong?")
+            while True:
+                if call_nurse():
+                    break
+
         else:
-            pass
-
-    elif "i need help" in speech["transcription"].lower():
-        text_to_speech("What's wrong?")
-        while True:
-            if call_nurse():
-                break
-
-    else:
-        print("You said: {}".format(speech["transcription"]))
-        text_to_speech(speech["transcription"])
+            simple_response(speech["transcription"])
+            print("You said: {}".format(speech["transcription"]))
