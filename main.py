@@ -6,21 +6,24 @@ import time
 import json
 
 
+# to how webserver use command php -S localhost:8000 -t public/
+
 class Alarm:
     # which room and bed is the voice assistant located in
     # used on sever side to get the patient
-    location = [1, 1]
+    bed_id = 175
     reason: str
-    timeOfAlarm: time.localtime()
-    timeOfAlarmOff: time.localtime()
+    timeOfAlarm: time
+    timeOfAlarmOff: time
     nurse: str
 
     def __init__(self, reason: str):
+        self.bed_id = self.bed_id
         self.reason = reason
-        self.timeOfAlarm = time.localtime()
+        self.timeOfAlarm = time.time()
 
     def to_json(self) -> str:
-        return json.dumps(self, default=lambda x: x.__dict__)
+        return json.dumps(self.__dict__)
 
 
 def speech_from_mic(audio_recognizer, usb_microphone):
@@ -83,7 +86,7 @@ def call_nurse():
     if reason["error"]:
         text_to_speech("I don't understand could you repeat")
     else:
-        if (reason["transcription"]) is "play the radio":
+        if (reason["transcription"]) == "play the radio":
             play_radio()
         else:
             text_to_speech("im calling a nurse")
@@ -94,8 +97,12 @@ def call_nurse():
 
 
 def simple_response(transcript):
-    if transcript == "what time is it":
+    if transcript == "what time is it" or transcript == "what is the time":
         text_to_speech("The time is {}".format(time.strftime("%H:%M", time.localtime())))
+    elif transcript == "when is visiting hours":
+        text_to_speech("Visiting hours are between 1 pm and 3 pm")
+    else:
+        return
 
 
 def listen():
@@ -109,6 +116,8 @@ def listen():
 
 
 if __name__ == '__main__':
+    new_alarm = Alarm("my stomach hurts")
+    print(new_alarm.to_json())
     while True:
         speech = listen()
         # if error print error and shutdown
