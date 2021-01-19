@@ -4,6 +4,7 @@ import speech_recognition as sr
 import pyttsx3
 import time
 import json
+import requests
 
 
 # to how webserver use command php -S localhost:8000 -t public/
@@ -11,19 +12,21 @@ import json
 class Alarm:
     # which room and bed is the voice assistant located in
     # used on sever side to get the patient
-    bed_id = 175
+    bed_id = 1
     reason: str
-    timeOfAlarm: time
-    timeOfAlarmOff: time
     nurse: str
 
     def __init__(self, reason: str):
         self.bed_id = self.bed_id
         self.reason = reason
-        self.timeOfAlarm = time.time()
 
     def to_json(self) -> str:
         return json.dumps(self.__dict__)
+
+    def send_new_alarm(self):
+        st = 'http://localhost:8000/api/alarms'
+        r = requests.post(st, self.to_json())
+        print(r.status_code)
 
 
 def speech_from_mic(audio_recognizer, usb_microphone):
@@ -118,6 +121,7 @@ def listen():
 if __name__ == '__main__':
     new_alarm = Alarm("my stomach hurts")
     print(new_alarm.to_json())
+    new_alarm.send_new_alarm()
     while True:
         speech = listen()
         # if error print error and shutdown
