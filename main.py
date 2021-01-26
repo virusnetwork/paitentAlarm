@@ -9,6 +9,9 @@ import requests
 
 # to how webserver use command php -S localhost:8000 -t public/
 
+alarm = False
+bed_id = 1
+
 class Alarm:
     # which room and bed is the voice assistant located in
     # used on sever side to get the patient
@@ -24,7 +27,7 @@ class Alarm:
         return json.dumps(self.__dict__)
 
     def send_new_alarm(self):
-        st = 'http://localhost:8000/api/alarms'
+        st = 'http://localhost:8000/api/alarms/new'
         r = requests.post(st, self.to_json())
         print(r.status_code)
 
@@ -83,6 +86,22 @@ def text_to_speech(text):
 def play_radio():
     pass
 
+def turn_off_alarm():
+    if not alarm:
+        text_to_speech("alarm not on")
+        return
+    else:
+        text_to_speech("Please state your name")
+        name = listen()
+        data = {}
+        data['bed_id'] = bed_id
+        data['nurse'] = name['transcript']
+
+        st = 'http://localhost:8000/api/alarms/new'
+        r = requests.post(st, json.dumps(data))
+        print(r.status_code)
+
+
 
 def call_nurse():
     reason = listen()
@@ -96,6 +115,7 @@ def call_nurse():
             print(reason["transcription"])
             new_alarm = Alarm(reason["transcription"])
             print(new_alarm.to_json())
+            alarm = True
         return True
 
 
