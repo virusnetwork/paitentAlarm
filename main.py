@@ -6,11 +6,11 @@ import time
 import json
 import requests
 
-
 # to how webserver use command php -S localhost:8000 -t public/
 
 alarm = False
 bed_id = 1
+
 
 class Alarm:
     # which room and bed is the voice assistant located in
@@ -86,6 +86,7 @@ def text_to_speech(text):
 def play_radio():
     pass
 
+
 def turn_off_alarm():
     if not alarm:
         text_to_speech("alarm not on")
@@ -93,14 +94,11 @@ def turn_off_alarm():
     else:
         text_to_speech("Please state your name")
         name = listen()
-        data = {}
-        data['bed_id'] = bed_id
-        data['nurse'] = name['transcript']
+        data = {'bed_id': bed_id, 'nurse': name['transcript']}
 
         st = 'http://localhost:8000/api/alarms/new'
         r = requests.post(st, json.dumps(data))
         print(r.status_code)
-
 
 
 def call_nurse():
@@ -108,24 +106,25 @@ def call_nurse():
     if reason["error"]:
         text_to_speech("I don't understand could you repeat")
     else:
-        if (reason["transcription"]) == "play the radio":
+        if simple_response(reason["transcription"]):
             play_radio()
         else:
             text_to_speech("im calling a nurse")
             print(reason["transcription"])
             new_alarm = Alarm(reason["transcription"])
-            print(new_alarm.to_json())
-            alarm = True
+            new_alarm.send_new_alarm()
         return True
 
 
 def simple_response(transcript):
-    if transcript == "what time is it" or transcript == "what is the time":
+    if transcript == "what time is it" or transcript == "what is the time" or transcript == "time is it":
         text_to_speech("The time is {}".format(time.strftime("%H:%M", time.localtime())))
+        return True
     elif transcript == "when is visiting hours":
         text_to_speech("Visiting hours are between 1 pm and 3 pm")
+        return True
     else:
-        return
+        return False
 
 
 def listen():
@@ -139,9 +138,6 @@ def listen():
 
 
 if __name__ == '__main__':
-    new_alarm = Alarm("my stomach hurts")
-    print(new_alarm.to_json())
-    new_alarm.send_new_alarm()
     while True:
         speech = listen()
         # if error print error and shutdown
