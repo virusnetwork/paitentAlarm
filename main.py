@@ -1,21 +1,22 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-import speech_recognition as sr
-import pyttsx3
-import time
 import json
+import time
+
+import pyttsx3
 import requests
+import speech_recognition as sr
 
 # to how webserver use command php -S localhost:8000 -t public/
 
 alarm = False
-bed_id = 1
+BED_ID = 1
 
 
 class Alarm:
     # which room and bed is the voice assistant located in
     # used on sever side to get the patient
-    bed_id = 1
+    BED_ID = 1
     reason: str
     nurse: str
 
@@ -30,6 +31,14 @@ class Alarm:
         st = 'http://localhost:8000/api/alarms/new'
         r = requests.post(st, self.to_json())
         print(r.status_code)
+
+
+def listen():
+    # create recognizer and mic instances
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
+
+    return speech_from_mic(recognizer, microphone)
 
 
 def speech_from_mic(audio_recognizer, usb_microphone):
@@ -64,7 +73,7 @@ def speech_from_mic(audio_recognizer, usb_microphone):
     # if a RequestError or unknown value error exception is caught,
     #   update the response object
     try:
-        response["transcription"] = audio_recognizer.recognize_google(audio)
+        response["transcription"] = audio_recognizer.recognize_google(audio, language="en-GB")
     except sr.RequestError:
         # API was unreachable or unresponsive
         response["success"] = False
@@ -94,7 +103,7 @@ def turn_off_alarm():
     else:
         text_to_speech("Please state your name")
         name = listen()
-        data = {'bed_id': bed_id, 'nurse': name['transcript']}
+        data = {'bed_id': BED_ID, 'nurse': name['transcript']}
 
         st = 'http://localhost:8000/api/alarms/new'
         r = requests.post(st, json.dumps(data))
@@ -125,16 +134,6 @@ def simple_response(transcript):
         return True
     else:
         return False
-
-
-def listen():
-    # create recognizer and mic instances
-    recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
-
-    print("speech to text")
-
-    return speech_from_mic(recognizer, microphone)
 
 
 if __name__ == '__main__':
