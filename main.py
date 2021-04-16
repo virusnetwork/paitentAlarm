@@ -1,5 +1,3 @@
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import json
 import time
 
@@ -7,33 +5,49 @@ import pyttsx3
 import requests
 import speech_recognition as sr
 
-# to how webserver use command php -S localhost:8000 -t public/
-
+# create function to change BED_ID
 alarm = False
 BED_ID = 1
 
 
 class Alarm:
-    # which room and bed is the voice assistant located in
-    # used on sever side to get the patient
+    """
+    class for creating new alarm.
+    alarm is sent to server to create a new alarm model
+    """
     BED_ID = 1
     reason: str
     nurse: str
 
     def __init__(self, reason: str):
-        self.bed_id = self.bed_id
+        """
+        :param reason:
+        """
+        self.BED_ID = BED_ID
         self.reason = reason
 
     def to_json(self) -> str:
+        """
+
+        :return:
+        """
         return json.dumps(self.__dict__)
 
     def send_new_alarm(self):
+        """
+
+        :return:
+        """
         st = 'http://localhost:8000/api/alarms/new'
         r = requests.post(st, self.to_json())
         print(r.status_code)
 
 
 def listen():
+    """
+    sets up recognizer and microphone and call speech_from_mic
+    :return: speech_from_mic dictionary with transcript
+    """
     # create recognizer and mic instances
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
@@ -86,17 +100,23 @@ def speech_from_mic(audio_recognizer, usb_microphone):
 
 
 def text_to_speech(text):
+    """
+    takes a string and plays said string in speech
+    :param text: string of what will be said
+    :return: nothing
+    """
     # take text and turn it into speech
     engine = pyttsx3.init()
     engine.say(text)
     engine.runAndWait()
 
 
-def play_radio():
-    pass
-
-
 def turn_off_alarm():
+    """
+    Allows nurse to turn off alarm
+    tells server to also turn off alarm
+    :return: nothing
+    """
     if not alarm:
         text_to_speech("alarm not on")
         return
@@ -111,12 +131,16 @@ def turn_off_alarm():
 
 
 def call_nurse():
+    """
+    creates new alarm for calling a nurse
+    tells server nurse is needed
+    """
     reason = listen()
     if reason["error"]:
         text_to_speech("I don't understand could you repeat")
     else:
         if simple_response(reason["transcription"]):
-            play_radio()
+            pass
         else:
             text_to_speech("im calling a nurse")
             print(reason["transcription"])
@@ -126,6 +150,13 @@ def call_nurse():
 
 
 def simple_response(transcript):
+    """
+    called by call_nurse().
+    checks reason against pre defined questions
+    will respond if possible else create an alarm
+    :param transcript: string of what user said
+    :return: True if function responded to question, else False create new alarm.
+    """
     if transcript == "what time is it" or transcript == "what is the time" or transcript == "time is it":
         text_to_speech("The time is {}".format(time.strftime("%H:%M", time.localtime())))
         return True
@@ -137,6 +168,9 @@ def simple_response(transcript):
 
 
 if __name__ == '__main__':
+    """
+    Main function, constant loop listing for trigger word and responding to patient.
+    """
     while True:
         speech = listen()
         # if error print error and shutdown
@@ -148,7 +182,7 @@ if __name__ == '__main__':
             else:
                 pass
 
-        elif "i need help" in speech["transcription"].lower():
+        elif "i need help" in speech["transcription"].lower() or "i need a nurse" in speech["transcription"].lower():
             text_to_speech("What's wrong?")
             while True:
                 if call_nurse():
