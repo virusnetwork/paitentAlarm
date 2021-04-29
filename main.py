@@ -23,7 +23,7 @@ class Alarm:
         """
         :param reason:
         """
-        self.BED_ID = BED_ID
+        self.bed_id = BED_ID
         self.reason = reason
 
     def to_json(self) -> str:
@@ -41,6 +41,7 @@ class Alarm:
         st = 'http://localhost:8000/api/alarms/new'
         r = requests.post(st, self.to_json())
         print(r.status_code)
+        print(self.to_json())
 
 
 def listen():
@@ -126,7 +127,7 @@ def turn_off_alarm():
         data = {'bed_id': BED_ID, 'nurse': name['transcript']}
 
         st = 'http://localhost:8000/api/alarms/new'
-        r = requests.post(st, json.dumps(data))
+        r = requests.post(st,data=json.dumps(data))
         print(r.status_code)
 
 
