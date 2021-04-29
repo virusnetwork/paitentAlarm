@@ -5,7 +5,11 @@ import pyttsx3
 import requests
 import speech_recognition as sr
 
+import main
+
 # create function to change BED_ID
+
+
 alarm = False
 BED_ID = 1
 
@@ -15,7 +19,6 @@ class Alarm:
     class for creating new alarm.
     alarm is sent to server to create a new alarm model
     """
-    BED_ID = 1
     reason: str
     nurse: str
 
@@ -39,9 +42,8 @@ class Alarm:
         :return:
         """
         st = 'http://localhost:8000/api/alarms/new'
-        r = requests.post(st, self.to_json())
-        print(r.status_code)
-        print(self.to_json())
+        requests.post(st, {'bed_id': BED_ID, 'reason': self.reason})
+        main.alarm = True
 
 
 def listen():
@@ -118,7 +120,7 @@ def turn_off_alarm():
     tells server to also turn off alarm
     :return: nothing
     """
-    if not alarm:
+    if not main.alarm:
         text_to_speech("alarm not on")
         return
     else:
@@ -127,8 +129,9 @@ def turn_off_alarm():
         data = {'bed_id': BED_ID, 'nurse': name['transcript']}
 
         st = 'http://localhost:8000/api/alarms/new'
-        r = requests.post(st,data=json.dumps(data))
-        print(r.status_code)
+        r = requests.post(st, data=json.dumps(data))
+        if r.status_code == 200:
+            main.alarm = False
 
 
 def call_nurse():
@@ -188,6 +191,8 @@ if __name__ == '__main__':
             while True:
                 if call_nurse():
                     break
+        elif "turn off alarm" in speech["transcription"].lower():
+            turn_off_alarm()
 
         else:
             simple_response(speech["transcription"])
