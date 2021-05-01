@@ -126,12 +126,13 @@ def turn_off_alarm():
     else:
         text_to_speech("Please state your name")
         name = listen()
-        data = {'bed_id': BED_ID, 'nurse': name['transcript']}
+        data = {'bed_id': BED_ID, 'nurse': name["transcription"]}
 
-        st = 'http://localhost:8000/api/alarms/new'
+        st = 'http://localhost:8000/api/alarms/off'
         r = requests.post(st, data=json.dumps(data))
         if r.status_code == 200:
             main.alarm = False
+            print("alarm off")
 
 
 def call_nurse():
@@ -191,7 +192,7 @@ if __name__ == '__main__':
             while True:
                 if call_nurse():
                     break
-        elif "turn off alarm" in speech["transcription"].lower():
+        elif "turn off the alarm" in speech["transcription"].lower() or "turn off alarm" in speech["transcription"].lower():
             turn_off_alarm()
 
         else:
